@@ -48,7 +48,7 @@ contains
     !!
     !! author - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Real(kind=dp), Parameter :: electron_charge = 1.6021766208e-19_dp ! C
+    Real(kind=dp), Parameter :: electron_charge = 6.241509125883258e+18_dp
     Real(kind=dp), Parameter :: coulomb = 1.0_dp
     Real(kind=dp), Parameter :: avogadro = 6.022140857e23_dp
     Real(kind=dp), Parameter :: boltz = 1.3806503e-23_dp ! m2kgs^-2K-1
@@ -56,6 +56,7 @@ contains
     Real(kind=dp), Parameter :: metre = 1.0_dp
     Real(kind=dp), Parameter :: bohr = 5.2918e-11_dp
     Real(kind=dp), Parameter :: inch = metre/2.54e-2_dp
+    Real(kind=dp), Parameter :: parsec = 3.240779270005395e-17_dp
 
     Real(kind=dp), Parameter :: joule = 1.0_dp
     Real(kind=dp), Parameter :: calorie = 1.0_dp / 4.1842_dp
@@ -91,6 +92,8 @@ contains
     call units_table%set("m", init_unit(abbrev="m", name="Metre", length=1, to_si=metre))
     call units_table%set('in', init_unit(abbrev="in", name="Inch", length=1, to_si=inch))
     call units_table%set("ft", init_unit(abbrev="ft", name="Foot", length=1, to_si=inch/12.0_dp))
+    call units_table%set("pc", init_unit(abbrev="pc", name="Parsec", length=1, to_si=parsec))
+
 
     ! Mass
 
@@ -119,6 +122,10 @@ contains
     call units_table%set("ry", init_unit(abbrev="Ry", name="Rydberg", mass=1, length=2, time=-2, to_si=2.0_dp*hartree))
     call units_table%set("k", init_unit(abbrev="K", name="Kelvin", mass=1, length=2, time=-2, to_si=boltz))
 
+    ! Energy flow
+    call units_table%set("w", init_unit(abbrev="W", name="Watt", mass=1, length=2, time=-3, to_si=joule/second))
+
+
     ! Pressure
 
     call units_table%set("atm", init_unit(abbrev="atm", name="Atmosphere", mass=1, length=-1, time=-2, to_si=atmosphere))
@@ -135,9 +142,9 @@ contains
 
     call units_table%set("auv", &
          & init_unit(abbrev="aut", name="Atomic Velocity Unit", length=1, time=-1, to_si=bohr/aut))
-
+    call units_table%set("beard", &
+         & init_unit(abbrev="beard", name="Beard growth", length=1, time=-1, to_si=5e-9*metre/second))
     ! Acceleration
-
     call units_table%set("grav", &
          & init_unit(abbrev="g_e", name="9.81 m/s^2", length=1, time=-2, to_si=gravity))
 
@@ -149,6 +156,7 @@ contains
     ! Mols
 
     call units_table%set("mol", init_unit(abbrev="mol", name="Mole", mol=1, to_si=avogadro))
+
 
     ! Unitless
 
@@ -205,7 +213,9 @@ contains
     call lower_case(tmp)
     if (.not. units_table%in(tmp)) then
        i = index(prefix_symbol, string(2:2))
-       if (i < 1 .or. .not. units_table%in(string(3:))) call error("Unit not found "//string(2:))
+       tmp = string(3:)
+       call lower_case(tmp)
+       if (i < 1 .or. .not. units_table%in(tmp)) call error("Unit not found "//string(2:))
        factor = prefix(i)
        string = string(1:1) // string(3:)
     end if
