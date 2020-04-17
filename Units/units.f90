@@ -392,7 +392,7 @@ contains
     !!
     !! get unit type from hash table
     !!
-    !! author    - j.s.bush april 2020
+    !! author    - i.j.bush april 2020
     !!-----------------------------------------------------------------------
 
     Implicit None
