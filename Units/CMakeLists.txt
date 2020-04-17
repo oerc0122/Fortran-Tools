@@ -1,0 +1,3 @@
+add_library(units SHARED units.f90)
+target_include_directories(units PRIVATE "${Fortran_Tools_BINARY_DIR}/Hash")
+target_link_libraries(units hash m)
