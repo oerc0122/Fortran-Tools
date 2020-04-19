@@ -4,3 +4,6 @@ target_link_libraries(units hash m)
 
 add_executable(units-test units_test.f90)
 target_link_libraries(units-test units hash m)
+
+add_executable(whats whats.f90)
+target_link_libraries(whats units hash m)

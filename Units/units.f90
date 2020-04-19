@@ -54,7 +54,7 @@ contains
     Real(kind=dp), Parameter :: boltz = 1.3806503e-23_dp ! m2kgs^-2K-1
 
     Real(kind=dp), Parameter :: metre = 1.0_dp
-    Real(kind=dp), Parameter :: bohr = 5.2918e-11_dp
+    Real(kind=dp), Parameter :: bohr = 18897161646.320724_dp
     Real(kind=dp), Parameter :: inch = metre/2.54e-2_dp
     Real(kind=dp), Parameter :: parsec = 3.240779270005395e-17_dp
 
@@ -176,7 +176,7 @@ contains
     from_unit = parse_unit_string(from)
     to_unit = parse_unit_string(to)
     output = from_unit / to_unit
-    if (any(output%dims /= 0)) call error('Cannot convert between '//from//' & '//to//' different dimensions')
+    if (any(output%dims /= 0)) call error('Cannot convert between '//trim(from)//' & '//trim(to)//' different dimensions')
     res = val / output%conversion_to_si
 
   end Function convert_units
