@@ -470,8 +470,7 @@ Contains
   Subroutine error(message)
     Character(Len=*), Intent( In    ) :: message
 
-    write(0, *) message
-    stop
+    error stop message
   end Subroutine error
 
 end Module hash
