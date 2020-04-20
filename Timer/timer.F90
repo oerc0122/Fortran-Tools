@@ -690,13 +690,17 @@ Contains
     !!------------------------------------------------!
     Type ( timer_type ), Intent ( In    ):: tmr
     Character ( len = * ), Intent( In    ) :: message
+    Integer :: ierr
 
     Call timer_write('')
     Call timer_write(message)
     Call timer_write('')
     Call dump_call_stack(tmr%stack)
-
-    Stop
+#ifdef mpi
+    Call mpi_abort(mpi_comm_world, ierr)
+#else
+    Error Stop 1
+#endif
   End Subroutine timer_error
 
   Subroutine timer_split_stack_string(tmr, stack_string, newStack, name)

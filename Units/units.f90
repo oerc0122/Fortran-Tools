@@ -419,8 +419,8 @@ contains
     Integer :: i
 
     do i = 1, len_trim(str)
-       Select Case(ichar(str(i:i)))
-       Case (65:90)
+       Select Case(str(i:i))
+       Case ('A':'Z')
           str(i:i) = achar( ichar(str(i:i)) + 32 )
        Case default
           continue
