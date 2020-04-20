@@ -1,6 +1,7 @@
 program timer_test
 
   use timer
+  Implicit None
   type(timer_type) :: tmr
 
   call init_timer_system(tmr, 0)
