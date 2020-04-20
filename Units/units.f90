@@ -74,7 +74,7 @@ contains
 
     Real(kind=dp), Parameter :: newton = 1.0_dp
 
-    Real(kind=dp), Parameter :: gravity = metre/second**2/9.81
+    Real(kind=dp), Parameter :: gravity = metre/second**2/9.81_dp
 
     call units_table%init(100)
 
