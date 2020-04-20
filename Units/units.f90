@@ -8,10 +8,10 @@ Module units
 
 
   Use hash, only: hash_table, STR_LEN, error
+  Use, intrinsic :: iso_fortran_env, only : dp => real64
   Implicit None
 
   Private
-  Integer, parameter :: dp = selected_real_kind(15, 300)
 
   Type, Private, Extends(hash_table) :: units_hash_table
    contains

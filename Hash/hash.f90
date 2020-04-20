@@ -8,11 +8,10 @@ Module hash
   !! contributions - i.j.bush april 2020
   !!-----------------------------------------------------------------------
 
+  Use, intrinsic :: iso_fortran_env, only : dp => real64
   Implicit None
 
   Private
-
-  Integer, Parameter :: dp = selected_real_kind(15, 300)
 
   Integer, Parameter, Public :: STR_LEN = 256
   Character(Len=*), Parameter :: BAD_VAL = "VAL_NOT_IN_KEYS"

@@ -3,12 +3,12 @@ Module timer
 #ifdef mpi
   use mpi
 #endif
+  Use, intrinsic :: iso_fortran_env, only : dp => real64
 
   Implicit None
 
   Private
 
-  Integer, Parameter :: dp = selected_real_kind(15, 300)
   Integer, Parameter :: max_depth = 6, max_name = 18
 
   Type :: node_timer
