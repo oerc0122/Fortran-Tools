@@ -387,7 +387,6 @@ contains
   end Function init_unit
 
   Subroutine get_unit( table, key, val, default )
-
     !!-----------------------------------------------------------------------
     !!
     !! get unit type from hash table
@@ -427,6 +426,5 @@ contains
        end Select
     end do
   end Subroutine lower_case
-
 
 end Module units
