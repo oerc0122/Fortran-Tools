@@ -48,50 +48,54 @@ contains
     !!
     !! author - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Real(kind=dp), Parameter :: electron_charge = 6.241509125883258e+18_dp
+    Real(kind=dp), Parameter :: electron_charge = 1.602176634e-19_dp
     Real(kind=dp), Parameter :: coulomb = 1.0_dp
     Real(kind=dp), Parameter :: avogadro = 6.022140857e23_dp
-    Real(kind=dp), Parameter :: boltz = 1.3806503e-23_dp ! m2kgs^-2K-1
+    Real(kind=dp), Parameter :: boltz = 1.3806503e-23_dp ! JK-1
 
     Real(kind=dp), Parameter :: metre = 1.0_dp
-    Real(kind=dp), Parameter :: bohr = 18897161646.320724_dp
-    Real(kind=dp), Parameter :: inch = metre/2.54e-2_dp
-    Real(kind=dp), Parameter :: parsec = 3.240779270005395e-17_dp
+    Real(kind=dp), Parameter :: angstrom = 1.0e-10_dp*metre
+    Real(kind=dp), Parameter :: bohr = 0.52918_dp*angstrom
+    Real(kind=dp), Parameter :: inch = 2.54e-2_dp*metre
+
+    Real(kind=dp), Parameter :: parsec = 3.0856775999999956e16_dp*metre
 
     Real(kind=dp), Parameter :: joule = 1.0_dp
-    Real(kind=dp), Parameter :: calorie = 1.0_dp / 4.1842_dp
+    Real(kind=dp), Parameter :: calorie = 4.1842_dp*joule
 
-    Real(kind=dp), Parameter :: hartree = 2.2937104486906E+17_dp
+    Real(kind=dp), Parameter :: hartree = 4.359744722e-18_dp*joule
 
     Real(kind=dp), Parameter :: kilogram = 1.0_dp
-    Real(kind=dp), Parameter :: pound = 0.45359237_dp
+    Real(kind=dp), Parameter :: electron_mass = 9.1093837015e-31_dp*kilogram
+    Real(kind=dp), Parameter :: pound = 0.45359237_dp*kilogram
 
     Real(kind=dp), Parameter :: second = 1.0_dp
-    Real(kind=dp), Parameter :: aut = 4.134137333518211e16_dp
+    Real(kind=dp), Parameter :: aut = 2.4188843265857e-17_dp*second
+
+    Real(kind=dp), Parameter :: newton = kilogram*metre/second**2
 
     Real(kind=dp), Parameter :: atmosphere = 0.0000098692316931427_dp
-    Real(kind=dp), Parameter :: pascal = 1.0_dp
 
-    Real(kind=dp), Parameter :: newton = 1.0_dp
+    Real(kind=dp), Parameter :: pascal = newton/metre**2
 
-    Real(kind=dp), Parameter :: gravity = metre/second**2/9.81_dp
+    Real(kind=dp), Parameter :: gravity = 9.81_dp*metre/second**2
 
     call units_table%init(100)
 
     ! Time
 
-    call units_table%set("hr", init_unit(abbrev="hr", name="Hour", time=1, to_si=second/3600.0_dp))
-    call units_table%set("min", init_unit(abbrev="min", name="Minute", time=1, to_si=second/60.0_dp))
+    call units_table%set("hr", init_unit(abbrev="hr", name="Hour", time=1, to_si=3600.0_dp*second))
+    call units_table%set("min", init_unit(abbrev="min", name="Minute", time=1, to_si=60.0_dp*second))
     call units_table%set("s", init_unit(abbrev="s", name="Second", time=1, to_si=second))
     call units_table%set("aut", init_unit(abbrev="aut", name="Atomic Time Unit", time=1, to_si=aut))
 
     ! Length
 
-    call units_table%set("ang", init_unit(abbrev="ang", name="Angstrom", length=1, to_si=1e10_dp*metre))
+    call units_table%set("ang", init_unit(abbrev="ang", name="Angstrom", length=1, to_si=angstrom))
     call units_table%set("bohr", init_unit(abbrev="bohr", name="Bohr", length=1, to_si=bohr))
     call units_table%set("m", init_unit(abbrev="m", name="Metre", length=1, to_si=metre))
     call units_table%set('in', init_unit(abbrev="in", name="Inch", length=1, to_si=inch))
-    call units_table%set("ft", init_unit(abbrev="ft", name="Foot", length=1, to_si=inch/12.0_dp))
+    call units_table%set("ft", init_unit(abbrev="ft", name="Foot", length=1, to_si=12.0_dp*inch))
     call units_table%set("pc", init_unit(abbrev="pc", name="Parsec", length=1, to_si=parsec))
 
 
@@ -101,7 +105,8 @@ contains
     call units_table%set("amu", init_unit(abbrev="amu", name="Atomic Mass Unit", mass=1, to_si=1.0_dp))
     call units_table%set("g", init_unit(abbrev="g", name="Gram", mass=1, to_si=1e3*kilogram))
     call units_table%set("lb", init_unit(abbrev="lb", name="Pound", mass=1, to_si=pound))
-    call units_table%set("oz", init_unit(abbrev="oz", name="Ounce", mass=1, to_si=pound*16.0_dp))
+    call units_table%set("oz", init_unit(abbrev="oz", name="Ounce", mass=1, to_si=pound/16.0_dp))
+    call units_table%set("m_e", init_unit(abbrev="m_e", name="Electron mass", mass=1, to_si=electron_mass))
 
     ! Charge
 
@@ -119,8 +124,11 @@ contains
          & init_unit(abbrev="Cal", name="Calorie", mass=1, length=2, time=-2, to_si=calorie))
     call units_table%set("ha", init_unit(abbrev="Ha", name="Hartree", mass=1, length=2, time=-2, to_si=hartree))
     call units_table%set("e_h", init_unit(abbrev="Ha", name="Hartree", mass=1, length=2, time=-2, to_si=hartree))
-    call units_table%set("ry", init_unit(abbrev="Ry", name="Rydberg", mass=1, length=2, time=-2, to_si=2.0_dp*hartree))
-    call units_table%set("k", init_unit(abbrev="K", name="Kelvin", mass=1, length=2, time=-2, to_si=boltz))
+    call units_table%set("ry", init_unit(abbrev="Ry", name="Rydberg", mass=1, length=2, time=-2, to_si=0.5_dp*hartree))
+
+    ! Temperature
+
+    call units_table%set("k", init_unit(abbrev="K", name="Kelvin", temp=1, to_si=1.0_dp))
 
     ! Energy flow
     call units_table%set("w", init_unit(abbrev="W", name="Watt", mass=1, length=2, time=-3, to_si=joule/second))
@@ -141,12 +149,15 @@ contains
     ! Velocity
 
     call units_table%set("auv", &
-         & init_unit(abbrev="aut", name="Atomic Velocity Unit", length=1, time=-1, to_si=bohr/aut))
+         & init_unit(abbrev="auv", name="Atomic Velocity Unit", length=1, time=-1, to_si=bohr/aut))
     call units_table%set("beard", &
          & init_unit(abbrev="beard", name="Beard growth", length=1, time=-1, to_si=5e-9*metre/second))
-    ! Acceleration
+
+    ! Constants
     call units_table%set("grav", &
          & init_unit(abbrev="g_e", name="9.81 m/s^2", length=1, time=-2, to_si=gravity))
+    call units_table%set("k_b", &
+         & init_unit(abbrev='k_b', name="Boltzmann Constant", mass=1, length=2, time=-2, temp=-1, to_si=boltz))
 
     ! Voltage
 
@@ -156,7 +167,6 @@ contains
     ! Mols
 
     call units_table%set("mol", init_unit(abbrev="mol", name="Mole", mol=1, to_si=avogadro))
-
 
     ! Unitless
 
@@ -188,25 +198,25 @@ contains
     Character(Len=256) :: tmp
     Character(len=*), Parameter :: prefix_symbol = "YZEPTGMk dcmunpfazy"
     Type(unit_data), Dimension(19), Parameter :: prefix = [ &
-         & unit_data(name="Yotta", abbrev="Y", conversion_to_si=1e-24_dp), &
-         & unit_data(name="Zetta", abbrev="Z", conversion_to_si=1e-21_dp), &
-         & unit_data(name="Exa",   abbrev="E", conversion_to_si=1e-18_dp), &
-         & unit_data(name="Peta",  abbrev="P", conversion_to_si=1e-15_dp), &
-         & unit_data(name="Tera",  abbrev="T", conversion_to_si=1e-12_dp), &
-         & unit_data(name="Giga",  abbrev="G", conversion_to_si=1e-9_dp), &
-         & unit_data(name="Mega",  abbrev="M", conversion_to_si=1e-6_dp), &
-         & unit_data(name="Kilo",  abbrev="k", conversion_to_si=1e-3_dp), &
+         & unit_data(name="Yotta", abbrev="Y", conversion_to_si=1e24_dp), &
+         & unit_data(name="Zetta", abbrev="Z", conversion_to_si=1e21_dp), &
+         & unit_data(name="Exa",   abbrev="E", conversion_to_si=1e18_dp), &
+         & unit_data(name="Peta",  abbrev="P", conversion_to_si=1e15_dp), &
+         & unit_data(name="Tera",  abbrev="T", conversion_to_si=1e12_dp), &
+         & unit_data(name="Giga",  abbrev="G", conversion_to_si=1e9_dp), &
+         & unit_data(name="Mega",  abbrev="M", conversion_to_si=1e6_dp), &
+         & unit_data(name="Kilo",  abbrev="k", conversion_to_si=1e3_dp), &
          & null_unit, &
-         & unit_data(name="Deci",  abbrev="d", conversion_to_si=1e1_dp), &
-         & unit_data(name="Centi", abbrev="c", conversion_to_si=1e2_dp), &
-         & unit_data(name="Milli", abbrev="m", conversion_to_si=1e3_dp), &
-         & unit_data(name="Micro", abbrev="u", conversion_to_si=1e6_dp), &
-         & unit_data(name="Nano",  abbrev="n", conversion_to_si=1e9_dp), &
-         & unit_data(name="Pico",  abbrev="p", conversion_to_si=1e12_dp), &
-         & unit_data(name="Femto", abbrev="f", conversion_to_si=1e15_dp), &
-         & unit_data(name="Atto",  abbrev="a", conversion_to_si=1e18_dp), &
-         & unit_data(name="Zepto", abbrev="z", conversion_to_si=1e21_dp), &
-         & unit_data(name="Yocto", abbrev="y", conversion_to_si=1e24_dp)]
+         & unit_data(name="Deci",  abbrev="d", conversion_to_si=1e-1_dp), &
+         & unit_data(name="Centi", abbrev="c", conversion_to_si=1e-2_dp), &
+         & unit_data(name="Milli", abbrev="m", conversion_to_si=1e-3_dp), &
+         & unit_data(name="Micro", abbrev="u", conversion_to_si=1e-6_dp), &
+         & unit_data(name="Nano",  abbrev="n", conversion_to_si=1e-9_dp), &
+         & unit_data(name="Pico",  abbrev="p", conversion_to_si=1e-12_dp), &
+         & unit_data(name="Femto", abbrev="f", conversion_to_si=1e-15_dp), &
+         & unit_data(name="Atto",  abbrev="a", conversion_to_si=1e-18_dp), &
+         & unit_data(name="Zepto", abbrev="z", conversion_to_si=1e-21_dp), &
+         & unit_data(name="Yocto", abbrev="y", conversion_to_si=1e-24_dp)]
 
     factor = null_unit
     tmp = string(2:)
@@ -284,7 +294,7 @@ contains
   Subroutine decompose_unit_string(string, output)
     Character(Len=256), Dimension(:), Allocatable :: output
     Character(Len=*), Intent( In ) :: string
-    Character(Len=*), Parameter :: alphabet = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_%'"//'"'
+    Character(Len=*), Parameter :: alphabet = "+-1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_%'"//'"'
     Character(Len=*), Parameter :: punc = "./^"
     Integer :: nParts
     Integer :: i, j, k
