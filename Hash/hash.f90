@@ -252,8 +252,9 @@ Contains
 
     location = table%get_loc(input)
 
-    output = table%table_data(location)
-    if (table%table_keys(location) /= input) then
+    if (table%table_keys(location) == input) then
+       output = table%table_data(location)
+    else
        if (present(default)) then
           output = default
        else
