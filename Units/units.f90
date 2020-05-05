@@ -88,6 +88,8 @@ contains
     call units_table%set("min", init_unit(abbrev="min", name="Minute", time=1, to_si=60.0_dp*second))
     call units_table%set("s", init_unit(abbrev="s", name="Second", time=1, to_si=second))
     call units_table%set("aut", init_unit(abbrev="aut", name="Atomic Time Unit", time=1, to_si=aut))
+    call units_table%set("giffy", init_unit(abbrev="giffy", name="Giffy", time=1, to_si=1e-2*second))
+    call units_table%set("shake", init_unit(abbrev="shake", name="Shakes of a lamb's tail", time=1, to_si=1e-8*second))
 
     ! Length
 
@@ -97,16 +99,19 @@ contains
     call units_table%set('in', init_unit(abbrev="in", name="Inch", length=1, to_si=inch))
     call units_table%set("ft", init_unit(abbrev="ft", name="Foot", length=1, to_si=12.0_dp*inch))
     call units_table%set("pc", init_unit(abbrev="pc", name="Parsec", length=1, to_si=parsec))
+    call units_table%set("bus", init_unit(abbrev="bus", name="London Bus", length=1, to_si=2.5_dp*metre))
 
 
     ! Mass
 
     call units_table%set("da", init_unit(abbrev="Da", name="Atomic Mass Unit", mass=1, to_si=1.0_dp))
     call units_table%set("amu", init_unit(abbrev="amu", name="Atomic Mass Unit", mass=1, to_si=1.0_dp))
-    call units_table%set("g", init_unit(abbrev="g", name="Gram", mass=1, to_si=1e3*kilogram))
+    call units_table%set("g", init_unit(abbrev="g", name="Gram", mass=1, to_si=1e-3*kilogram))
     call units_table%set("lb", init_unit(abbrev="lb", name="Pound", mass=1, to_si=pound))
     call units_table%set("oz", init_unit(abbrev="oz", name="Ounce", mass=1, to_si=pound/16.0_dp))
     call units_table%set("m_e", init_unit(abbrev="m_e", name="Electron mass", mass=1, to_si=electron_mass))
+    call units_table%set("whale", init_unit(abbrev="Whale", name="Blue Whale Mass", mass=1, to_si=100e3_dp*kilogram))
+
 
     ! Charge
 
@@ -125,6 +130,8 @@ contains
     call units_table%set("ha", init_unit(abbrev="Ha", name="Hartree", mass=1, length=2, time=-2, to_si=hartree))
     call units_table%set("e_h", init_unit(abbrev="Ha", name="Hartree", mass=1, length=2, time=-2, to_si=hartree))
     call units_table%set("ry", init_unit(abbrev="Ry", name="Rydberg", mass=1, length=2, time=-2, to_si=0.5_dp*hartree))
+    call units_table%set("littleboy", init_unit(abbrev="littleboy", name="Little Boy", &
+         & mass=1, length=2, time=-2, to_si=6.3E+13*joule))
 
     ! Temperature
 
@@ -133,6 +140,10 @@ contains
     ! Energy flow
     call units_table%set("w", init_unit(abbrev="W", name="Watt", mass=1, length=2, time=-3, to_si=joule/second))
 
+    ! Area
+
+    call units_table%set("wales", init_unit(abbrev="Wales", name="Are of Wales", length=2, to_si= 2.07350E10_dp*metre**2))
+    call units_table%set("barn", init_unit(abbrev="barn", name="Barn", length=2, to_si=1e-28_dp*metre**2))
 
     ! Pressure
 
@@ -185,7 +196,7 @@ contains
     output = output%init("", "", 1.0_dp)
     from_unit = parse_unit_string(from)
     to_unit = parse_unit_string(to)
-    output = from_unit / to_unit
+    output = to_unit / from_unit
     if (any(output%dims /= 0)) call error('Cannot convert between '//trim(from)//' & '//trim(to)//' different dimensions')
     res = val / output%conversion_to_si
 

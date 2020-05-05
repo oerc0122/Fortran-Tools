@@ -179,7 +179,7 @@ Contains
     do i = 1, len_trim(input)
        output = output + ichar(input(i:i))
     end do
-    output = mod(output, table%size)
+    output = mod(output, table%size) + 1
 
   End Function hash_value
 
