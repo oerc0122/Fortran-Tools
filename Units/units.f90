@@ -62,10 +62,10 @@ contains
 
     Real(kind=dp), Parameter :: joule = 1.0_dp
     Real(kind=dp), Parameter :: calorie = 4.1842_dp*joule
-
     Real(kind=dp), Parameter :: hartree = 4.359744722e-18_dp*joule
 
     Real(kind=dp), Parameter :: kilogram = 1.0_dp
+    Real(kind=dp), Parameter :: amu = 1.660539e-21_dp*kilogram
     Real(kind=dp), Parameter :: electron_mass = 9.1093837015e-31_dp*kilogram
     Real(kind=dp), Parameter :: pound = 0.45359237_dp*kilogram
 
@@ -74,7 +74,7 @@ contains
 
     Real(kind=dp), Parameter :: newton = kilogram*metre/second**2
 
-    Real(kind=dp), Parameter :: atmosphere = 0.0000098692316931427_dp
+    Real(kind=dp), Parameter :: atmosphere = 101325.0_dp
 
     Real(kind=dp), Parameter :: pascal = newton/metre**2
 
@@ -101,17 +101,15 @@ contains
     call units_table%set("pc", init_unit(abbrev="pc", name="Parsec", length=1, to_si=parsec))
     call units_table%set("bus", init_unit(abbrev="bus", name="London Bus", length=1, to_si=2.5_dp*metre))
 
-
     ! Mass
 
-    call units_table%set("da", init_unit(abbrev="Da", name="Atomic Mass Unit", mass=1, to_si=1.0_dp))
-    call units_table%set("amu", init_unit(abbrev="amu", name="Atomic Mass Unit", mass=1, to_si=1.0_dp))
+    call units_table%set("da", init_unit(abbrev="Da", name="Atomic Mass Unit", mass=1, to_si=amu))
+    call units_table%set("amu", init_unit(abbrev="amu", name="Atomic Mass Unit", mass=1, to_si=amu))
     call units_table%set("g", init_unit(abbrev="g", name="Gram", mass=1, to_si=1e-3*kilogram))
     call units_table%set("lb", init_unit(abbrev="lb", name="Pound", mass=1, to_si=pound))
     call units_table%set("oz", init_unit(abbrev="oz", name="Ounce", mass=1, to_si=pound/16.0_dp))
     call units_table%set("m_e", init_unit(abbrev="m_e", name="Electron mass", mass=1, to_si=electron_mass))
     call units_table%set("whale", init_unit(abbrev="Whale", name="Blue Whale Mass", mass=1, to_si=100e3_dp*kilogram))
-
 
     ! Charge
 
@@ -421,9 +419,9 @@ contains
     Character(Len=*), Intent( In    ) :: key
     type(unit_data)            , Intent(   Out ) :: val
     type(unit_data), Intent( In    ), Optional :: default
-    Class( * ), Allocatable :: stuff
+    Class( * ), Pointer :: stuff
 
-    stuff = table%get_cont(key, default)
+    call table%get_cont(key, default, stuff)
 
     Select Type( stuff )
     Type is ( unit_data )
@@ -431,6 +429,9 @@ contains
     Class Default
        Call error('Trying to get unit from a not unit')
     End Select
+
+    deallocate(stuff)
+    nullify(stuff)
 
   End Subroutine get_unit
 

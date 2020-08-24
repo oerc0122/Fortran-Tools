@@ -8,20 +8,21 @@ Module hash
   !! contributions - i.j.bush april 2020
   !!-----------------------------------------------------------------------
 
-  Use, intrinsic :: iso_fortran_env, only : dp => real64
+  Use, intrinsic :: iso_fortran_env, only : wp => real64
   Implicit None
 
   Private
 
-  Integer, Parameter, Public :: STR_LEN = 256
+  Integer, Parameter :: STR_LEN = 256
+  Integer, Parameter :: MAX_KEY = 50
   Character(Len=*), Parameter :: BAD_VAL = "VAL_NOT_IN_KEYS"
 
   Type, Public :: container
      !! Generic data container
      Private
-     Class( * ), Allocatable, Private :: data
+     Class( * ), Pointer, Private :: data => Null()
    Contains
-     Generic, Public :: Assignment( = ) => set, get
+!     Generic, Public :: Assignment( = ) => set, get
      Procedure,            Private :: set => set_container
      Procedure, Pass( C ), Private :: get => get_container
   End type container
@@ -30,13 +31,13 @@ Module hash
      !! Type containing hash table of parameters
      Private
      Type(container), dimension(:), allocatable :: table_data
-     Character(Len=STR_LEN), dimension(:), allocatable :: table_keys
-     Character(Len=STR_LEN), dimension(:), allocatable :: key_names
-     Integer :: collisions = 0
-     Integer :: used_keys = -1
+     Character(Len=MAX_KEY), dimension(:), allocatable :: table_keys
+     Character(Len=MAX_KEY), dimension(:), allocatable :: key_names
+     Integer, Public :: collisions = 0
+     Integer, Public :: used_keys = -1
      Integer :: size = -1
-     !> Values in hash table can be overwritten: Default = False
-     Logical, Public :: can_overwrite = .true.
+     !> Values in hash table can be overwritten: Default = True; Set with table%fix
+     Logical :: can_overwrite = .true.
      Logical :: allocated = .false.
    Contains
 
@@ -45,7 +46,7 @@ Module hash
      Procedure, Public, Pass :: set => set_hash_value
      Generic  , Public  :: get => get_int, get_double, get_complex
      Procedure, Public, Pass :: hash => hash_value
-     Procedure, Public, Pass :: keys => print_keys
+     Procedure, Public, Pass :: print_keys, get_keys
      Procedure, Public, Pass(table_to) :: fill => fill_from_table
      Procedure, Public, Pass :: copy => copy_table
      Procedure, Public, Pass :: resize => resize_table
@@ -54,11 +55,14 @@ Module hash
      Procedure, Public :: get_cont => get_hash_value
      Procedure, Private, Pass :: get_loc => get_loc
      Procedure, Public, Pass :: in => contains_value
+     Procedure, Public, Pass :: fix => fix_table
      Final :: cleanup
 
   End Type hash_table
 
-  public :: error
+  Public :: MAX_KEY, STR_LEN
+  Public :: get_int, get_double, get_complex
+  Public :: error
 
 Contains
 
@@ -75,7 +79,8 @@ Contains
     Class( container ), Intent( InOut ) :: C
     Class( *         ), Intent( In    ) :: stuff
 
-    C%data = stuff
+    if (associated(C%data)) Deallocate(C%data)
+    Allocate(C%data, source=stuff)
 
   End Subroutine set_container
 
@@ -90,9 +95,9 @@ Contains
     Implicit None
 
     Class( container ),              Intent( In    ) :: C
-    Class( *         ), Allocatable, Intent(   Out ) :: stuff
+    Class( *         ), Pointer, Intent(   Out ) :: stuff
 
-    stuff = C%data
+    Allocate(stuff, source=C%data)
 
   End Subroutine get_container
 
@@ -105,6 +110,15 @@ Contains
     !!-----------------------------------------------------------------------
     Type(hash_table), Intent( InOut ) :: table
     Integer :: ierr
+    Integer :: i
+
+    do i = 1, table%size
+      if (table%table_keys(i) /= BAD_VAL) then
+        Deallocate(table%table_data(i)%data, stat=ierr)
+        Nullify(table%table_data(i)%data)
+        If (ierr /= 0) call error("Error deallocate hash%table_data element in cleanup hash table")
+      end if
+    end do
 
     if (allocated(table%table_data)) then
        Deallocate(table%table_data, stat=ierr)
@@ -169,8 +183,8 @@ Contains
     !!
     !! author    - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Class(hash_table) :: table
-    Character(Len=*), Intent( In    ) :: input
+    Class(hash_table), Intent( In    ) :: table
+    Character(Len=*),  Intent( In    ) :: input
     Integer :: output
     Integer :: i
 
@@ -190,11 +204,11 @@ Contains
     !!
     !! author    - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Class(hash_table) :: table
+    Class(hash_table), Intent(InOut) :: table
     Character(Len=*), Intent(In) :: input
     Logical, Intent(In), Optional :: must_find
     Integer :: location
-    Character(Len=STR_LEN) :: key
+    Character(Len=MAX_KEY) :: key
 
 
     location = table%hash(input)
@@ -223,7 +237,7 @@ Contains
     !!
     !! author    - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Class(hash_table), Intent( In     ) :: table
+    Class(hash_table), Intent( InOut  ) :: table
     Character(Len=*), Intent( In    ) :: input
     Integer :: location
     Logical :: output
@@ -235,34 +249,34 @@ Contains
 
   End Function contains_value
 
-  Function get_hash_value(table, input, default) result(output)
+  Subroutine get_hash_value(table, input, default, output)
     !!-----------------------------------------------------------------------
     !!
     !! Retrieve stored value from hash table
     !!
     !! author    - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Class(hash_table), Intent( In     ) :: table
+    Class(hash_table), Intent( InOut  ) :: table
     Character(Len=*), Intent( In    ) :: input
     Integer :: location
-    Class(*), Intent( In     ), Optional :: default
-    Class(*), Allocatable :: output
+    Class(*), Intent( In    ), Optional :: default
+    Class(*), Intent(   Out ), Pointer :: output
 
     if (.not. table%allocated) call error('Attempting to get from unallocated table')
 
     location = table%get_loc(input)
 
     if (table%table_keys(location) == input) then
-       output = table%table_data(location)
+      call table%table_data(location)%get(output)
     else
        if (present(default)) then
-          output = default
+         Allocate(output, source = default)
        else
-          call error('No data pertaining to key '//input//' in table')
+         call error('No data pertaining to key '//input//' in table')
        end if
     end if
 
-  End Function get_hash_value
+  End Subroutine get_hash_value
 
   Subroutine set_hash_value(table, key, input)
     !!-----------------------------------------------------------------------
@@ -287,10 +301,21 @@ Contains
        table%used_keys = table%used_keys + 1
        table%key_names(table%used_keys) = key
     end if
-    table%table_data(location) = input
+    call table%table_data(location)%set(input)
     table%table_keys(location) = key
 
   End Subroutine set_hash_value
+
+  Subroutine get_keys(table, keys)
+    Class(hash_table), Intent( In    ) :: table
+    Character(Len=MAX_KEY), Dimension(:), Allocatable :: keys
+
+    if (allocated(keys)) then
+       deallocate(keys)
+    end if
+    allocate(keys, source=table%key_names)
+
+  End Subroutine get_keys
 
   Subroutine print_keys(table)
     !!-----------------------------------------------------------------------
@@ -315,7 +340,7 @@ Contains
     !!
     !! author    - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Class(hash_table), Intent( In    ) :: table_from
+    Class(hash_table), Intent( InOut ) :: table_from
     Class(hash_table), Intent( InOut ) :: table_to
     Integer :: location
     Integer :: i
@@ -356,7 +381,7 @@ Contains
     !!
     !! author    - j.wilkins march 2020
     !!-----------------------------------------------------------------------
-    Class(hash_table), Intent( In    ) :: table_from
+    Class(hash_table), Intent( InOut ) :: table_from
     Class(hash_table), Intent( InOut ) :: table_to
 
     call table_to%resize(table_from%size)
@@ -403,9 +428,9 @@ Contains
     Character(Len=*), Intent( In    ) :: key
     Integer               , Intent(   Out ) :: val
     Integer, Intent( In    ), Optional :: default
-    Class( * ), Allocatable :: stuff
+    Class( * ), Pointer :: stuff
 
-    stuff = table%get_cont(key, default)
+    call table%get_cont(key, default, stuff)
 
     Select Type( stuff )
     Type is ( Integer )
@@ -413,6 +438,9 @@ Contains
     Class Default
        Call error('Trying to get integer from a not integer')
     End Select
+
+    deallocate(stuff)
+    nullify(stuff)
 
   End Subroutine get_int
 
@@ -428,18 +456,21 @@ Contains
 
     Class( hash_table ), Intent( InOut ) :: table
     Character(Len=*), Intent( In    ) :: key
-    Real(kind=dp), Intent( In    ), Optional :: default
-    Real(kind=dp)               , Intent(   Out ) :: val
-    Class( * ), Allocatable :: stuff
+    Real(kind=wp), Intent( In    ), Optional :: default
+    Real(kind=wp)               , Intent(   Out ) :: val
+    Class( * ), Pointer :: stuff
 
-    stuff = table%get_cont(key, default)
+    call table%get_cont(key, default, stuff)
 
     Select Type( stuff )
-    Type is ( Real( dp ) )
-       val = stuff
+    Type is ( Real( wp ) )
+      val = stuff
     Class Default
        Call error('Trying to get real from a not real')
     End Select
+
+    deallocate(stuff)
+    nullify(stuff)
 
   End Subroutine get_double
 
@@ -455,19 +486,21 @@ Contains
 
     Class( hash_table ), Intent( InOut ) :: table
     Character(Len=*), Intent( In    ) :: key
-    Complex(kind=dp)               , Intent(   Out ) :: val
-    Complex(kind=dp), Intent( In    ), Optional :: default
-    Class( * ), Allocatable :: stuff
+    Complex(kind=wp)               , Intent(   Out ) :: val
+    Complex(kind=wp), Intent( In    ), Optional :: default
+    Class( * ), Pointer :: stuff
 
-    stuff = table%get_cont(key, default)
+    call table%get_cont(key, default, stuff)
 
     Select Type( stuff )
-    Type is ( Complex( dp ) )
+    Type is ( Complex( wp ) )
        val = stuff
     Class Default
        Call error('Trying to get complex from a not complex')
     End Select
 
+    deallocate(stuff)
+    nullify(stuff)
   End Subroutine get_complex
 
   Subroutine error(message)
@@ -475,5 +508,11 @@ Contains
 
     error stop message
   end Subroutine error
+
+  Subroutine fix_table(table)
+    Class( hash_table ), Intent( InOut ) :: table
+
+    table%can_overwrite = .false.
+  end Subroutine fix_table
 
 end Module hash
